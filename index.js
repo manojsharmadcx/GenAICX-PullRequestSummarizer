@@ -212,7 +212,7 @@ try {
 
       // Create a comment with the generated explanation
       const octokit = new Octokit({ auth: token });
-      const comment = `Explanation of Changes (Generated via OpenAI):\n\n${JSON.stringify(explanation)}`;
+      const comment = `Explanation of Changes:\n\n${JSON.stringify(explanation)}`;
 
       async function createComment() {
         const newComment = await octokit.issues.createComment({
