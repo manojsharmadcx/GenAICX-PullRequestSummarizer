@@ -19,6 +19,8 @@ const { context: githubContext } = require('@actions/github');
 const endpoint = core.getInput('azure-endpoint');
 const azureApiKey = core.getInput('azure-api-key');
 
+console.log(endpoint)
+console.log(azureApiKey)
 const client = new OpenAIClient(endpoint, new AzureKeyCredential(azureApiKey));
 
 const headers = {
