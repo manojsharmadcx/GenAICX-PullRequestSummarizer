@@ -19,9 +19,16 @@ const { context: githubContext } = require('@actions/github');
 const endpoint = core.getInput('azure-endpoint');
 const azureApiKey = core.getInput('azure-api-key');
 
+const client = new OpenAIClient(endpoint, new AzureKeyCredential(azureApiKey));
+
+const headers = {
+    Accept: 'application/json, text/plain, */*',
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${azureApiKey}`  // Append the API key correctly here
+};
+
 // Function to generate the explanation of the changes using OpenAI API
 async function generateExplanation(changes) {
-  const client = new OpenAIClient(endpoint, new AzureKeyCredential(azureApiKey));
   const deploymentId = "gpt-4-0613";
 
 
@@ -74,6 +81,7 @@ async function generateExplanation(changes) {
       ];
 
       await client.getChatCompletions(deploymentId,messages,{
+        headers: headers,
         max_tokens: maxResponseTokens
       });
     } else {
@@ -86,6 +94,7 @@ async function generateExplanation(changes) {
       ];
 
       let response = await client.getChatCompletions(deploymentId,messages,{
+        headers: headers,
         max_tokens: maxResponseTokens
       });
 
