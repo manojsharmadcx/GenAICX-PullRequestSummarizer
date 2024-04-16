@@ -22,7 +22,7 @@ const azureApiKey = core.getInput('azure-api-key');
 // Function to generate the explanation of the changes using OpenAI API
 async function generateExplanation(changes) {
   const client = new OpenAIClient(endpoint, new AzureKeyCredential(azureApiKey));
-  const deploymentId = "gpt-35-turbo";
+  const deploymentId = "gpt-4-0613";
 
 
   const encodedDiff = encode(JSON.stringify(changes));
