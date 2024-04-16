@@ -31,7 +31,7 @@ const headers = {
 
 // Function to generate the explanation of the changes using OpenAI API
 async function generateExplanation(changes) {
-  const deploymentId = "gpt-4-0613";
+  const deploymentId = "gpt-35";
 
 
   const encodedDiff = encode(JSON.stringify(changes));
