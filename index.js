@@ -84,7 +84,11 @@ async function generateExplanation(changes) {
 
       await client.getChatCompletions(deploymentId,messages,{
         headers: headers,
-        max_tokens: maxResponseTokens
+        temperature: temperature,
+        max_tokens: maxResponseTokens,
+        top_p: topP,
+        frequency_penalty: frequencyPenalty,
+        presence_penalty: presencePenalty,
       });
     } else {
       let customPrompt = core.getInput('custom-prompt');
@@ -97,7 +101,11 @@ async function generateExplanation(changes) {
 
       let response = await client.getChatCompletions(deploymentId,messages,{
         headers: headers,
-        max_tokens: maxResponseTokens
+        temperature: temperature,
+        max_tokens: maxResponseTokens,
+        top_p: topP,
+        frequency_penalty: frequencyPenalty,
+        presence_penalty: presencePenalty,
       });
 
       const explanation = response.choices[0].message.content.trim();
