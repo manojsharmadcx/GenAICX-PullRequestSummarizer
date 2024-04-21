@@ -4,14 +4,21 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const { encode, decode } = require('gpt-3-encoder')
 
-const { Configuration, OpenAIApi } = require("openai");
+const { Configuration, OpenAIApi } = require("azure-openai");
 const { Octokit } = require('@octokit/rest');
 const { context: githubContext } = require('@actions/github');
 
 // Create an OpenAI instance using the provided API key
-const configuration = new Configuration({
-  basePath: "https://dcxazureopenai.openai.azure.com/openai/deployments/gpt-35",
-});
+const configuration =  new Configuration({
+      apiKey: core.getInput('open-api-key'),
+      // add azure info into configuration
+      azure: {
+         apiKey: core.getInput('open-api-key'),
+         endpoint: core.getInput('open-api-endpoint'),
+         // deploymentName is optional, if you donot set it, you need to set it in the request parameter
+         deploymentName: core.getInput('open-api-deployment'),
+      }
+   })
 const openai = new OpenAIApi(configuration);
 
 // Function to generate the explanation of the changes using OpenAI API
@@ -68,13 +75,7 @@ async function generateExplanation(changes) {
         top_p: topP,
         frequency_penalty: frequencyPenalty,
         presence_penalty: presencePenalty,
-      },
-      {
-        headers: {            
-            'api-key': core.getInput('open-api-key'),
-        },
-        params: { "api-version": "2023-05-15" }
-     }
+      }
     );
     } else {
       let customPrompt = core.getInput('custom-prompt');
@@ -89,12 +90,6 @@ async function generateExplanation(changes) {
         top_p: topP,
         frequency_penalty: frequencyPenalty,
         presence_penalty: presencePenalty,
-      },
-      {
-        headers: {            
-            'api-key': core.getInput('open-api-key'),
-        },
-        params: { "api-version": "2023-05-15" }
       }
       );
 
