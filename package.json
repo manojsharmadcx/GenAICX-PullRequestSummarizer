@@ -1,7 +1,7 @@
 {
   "name": "chatgpt github action",
   "version": "1.0.0",
-  "description": "Github action that generates explanations of changes using the OpenAI API",
+  "description": "Github action that generates explanations of changes using the Azure Open API",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
