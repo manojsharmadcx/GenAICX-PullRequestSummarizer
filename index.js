@@ -66,34 +66,49 @@ async function generateExplanation(changes) {
     if (part != totalParts) {
       let prompt = `This is part ${part} of ${totalParts}. Just receive and acknowledge as Part ${part}/${totalParts} \n\n${obj}`;
       console.log(prompt);
-
-      await openai.createChatCompletion({
-        model: model,
-        messages: [{role: "user", content: prompt }],
-        temperature: temperature,
-        max_tokens: maxResponseTokens,
-        top_p: topP,
-        frequency_penalty: frequencyPenalty,
-        presence_penalty: presencePenalty,
-      }
-    );
+      const apiKey = core.getInput('open-api-key');
+      const aoiEndpoint = core.getInput('open-api-endpoint');
+      await fetch(aoiEndpoint, {
+        method: 'POST',
+        headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          max_tokens: maxResponseTokens,
+          temperature: temperature,
+          max_tokens: maxResponseTokens,
+          top_p: topP,
+          frequency_penalty: frequencyPenalty,
+          presence_penalty: presencePenalty,
+          messages: [{
+            role: "user",
+            content: prompt
+          }]
+        })
+      });
     } else {
       let customPrompt = core.getInput('custom-prompt');
       let prompt = `This is part ${part} of ${totalParts}. ${customPrompt}\n\n${obj}`;
       console.log(prompt);
+      const apiKey = core.getInput('open-api-key');
+      const aoiEndpoint = core.getInput('open-api-endpoint');
+      const request = await fetch(aoiEndpoint, {
+        method: 'POST',
+        headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          max_tokens: maxResponseTokens,
+          temperature: temperature,
+          max_tokens: maxResponseTokens,
+          top_p: topP,
+          frequency_penalty: frequencyPenalty,
+          presence_penalty: presencePenalty,
+          messages: [{
+            role: "user",
+            content: prompt
+          }]
+        })
+      });
 
-      let response = await openai.createChatCompletion({
-        model: model,
-        messages: [{role: "user", content: prompt }],
-        temperature: temperature,
-        max_tokens: maxResponseTokens,
-        top_p: topP,
-        frequency_penalty: frequencyPenalty,
-        presence_penalty: presencePenalty,
-      }
-      );
-
-      const explanation = response.data.choices[0].message.content.trim();
+      const response = await request.json();
+      const explanation = response.choices[0].message.content.trim();
       return explanation;
     }
   }
@@ -215,7 +230,7 @@ try {
 
       // Create a comment with the generated explanation
       const octokit = new Octokit({ auth: token });
-      const comment = `Summary of Changes:\n\n${JSON.stringify(explanation)}`;
+      const comment = `Explanation of Changes:\n\n${JSON.stringify(explanation)}`;
 
       async function createComment() {
         const newComment = await octokit.issues.createComment({
