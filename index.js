@@ -66,17 +66,24 @@ async function generateExplanation(changes) {
     if (part != totalParts) {
       let prompt = `This is part ${part} of ${totalParts}. Just receive and acknowledge as Part ${part}/${totalParts} \n\n${obj}`;
       console.log(prompt);
-
-      await openai.createChatCompletion({
-        model: model,
-        messages: [{role: "user", content: prompt }],
-        temperature: temperature,
-        max_tokens: maxResponseTokens,
-        top_p: topP,
-        frequency_penalty: frequencyPenalty,
-        presence_penalty: presencePenalty,
-      }
-    );
+      const apiKey = core.getInput('open-api-key');
+      const aoiEndpoint = core.getInput('open-api-endpoint');
+      await fetch(aoiEndpoint, {
+        method: 'POST',
+        headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          max_tokens: maxResponseTokens,
+          temperature: temperature,
+          max_tokens: maxResponseTokens,
+          top_p: topP,
+          frequency_penalty: frequencyPenalty,
+          presence_penalty: presencePenalty,
+          messages: [{
+            role: "user",
+            content: prompt
+          }]
+        })
+      });
     } else {
       let customPrompt = core.getInput('custom-prompt');
       let prompt = `This is part ${part} of ${totalParts}. ${customPrompt}\n\n${obj}`;
