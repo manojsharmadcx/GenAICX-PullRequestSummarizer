@@ -4,36 +4,18 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const { encode, decode } = require('gpt-3-encoder')
 
-// const { Configuration, OpenAIApi } = require("openai");
-const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
-
+const { Configuration, OpenAIApi } = require("openai");
 const { Octokit } = require('@octokit/rest');
 const { context: githubContext } = require('@actions/github');
 
 // Create an OpenAI instance using the provided API key
-// const configuration = new Configuration({
-//   apiKey: core.getInput('open-api-key')
-// });
-// const openai = new OpenAIApi(configuration);
-
-const endpoint = core.getInput('azure-endpoint');
-const azureApiKey = core.getInput('azure-api-key');
-
-console.log(endpoint)
-console.log(azureApiKey)
-const client = new OpenAIClient(endpoint, new AzureKeyCredential(azureApiKey));
-
-const headers = {
-    Accept: 'application/json, text/plain, */*',
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${azureApiKey}`  // Append the API key correctly here
-};
+const configuration = new Configuration({
+  basePath: "https://dcxazureopenai.openai.azure.com/openai/deployments/gpt-35",
+});
+const openai = new OpenAIApi(configuration);
 
 // Function to generate the explanation of the changes using OpenAI API
 async function generateExplanation(changes) {
-  const deploymentId = "gpt-35";
-
-
   const encodedDiff = encode(JSON.stringify(changes));
   const totalTokens = encode(JSON.stringify(changes)).length;
 
@@ -78,38 +60,45 @@ async function generateExplanation(changes) {
       let prompt = `This is part ${part} of ${totalParts}. Just receive and acknowledge as Part ${part}/${totalParts} \n\n${obj}`;
       console.log(prompt);
 
-      const messages = [
-        {role: "user", content: prompt }
-      ];
-
-      await client.getChatCompletions(deploymentId,messages,{
-        headers: headers,
+      await openai.createChatCompletion({
+        model: model,
+        messages: [{role: "user", content: prompt }],
         temperature: temperature,
         max_tokens: maxResponseTokens,
         top_p: topP,
         frequency_penalty: frequencyPenalty,
         presence_penalty: presencePenalty,
-      });
+      },
+      {
+        headers: {            
+            'api-key': core.getInput('open-api-key'),
+        },
+        params: { "api-version": "2023-05-15" }
+     }
+    );
     } else {
       let customPrompt = core.getInput('custom-prompt');
       let prompt = `This is part ${part} of ${totalParts}. ${customPrompt}\n\n${obj}`;
       console.log(prompt);
 
-      const messages = [
-        {role: "user", content: prompt }
-      ];
-
-      let response = await client.getChatCompletions(deploymentId,messages,{
-        headers: headers,
+      let response = await openai.createChatCompletion({
+        model: model,
+        messages: [{role: "user", content: prompt }],
         temperature: temperature,
         max_tokens: maxResponseTokens,
         top_p: topP,
         frequency_penalty: frequencyPenalty,
         presence_penalty: presencePenalty,
-      });
+      },
+      {
+        headers: {            
+            'api-key': core.getInput('open-api-key'),
+        },
+        params: { "api-version": "2023-05-15" }
+      }
+      );
 
-      const explanation = response.choices[0].message.content.trim();
-      // const explanation = response.data.choices[0].message.content.trim();
+      const explanation = response.data.choices[0].message.content.trim();
       return explanation;
     }
   }
@@ -231,7 +220,7 @@ try {
 
       // Create a comment with the generated explanation
       const octokit = new Octokit({ auth: token });
-      const comment = `Explanation of Changes:\n\n${JSON.stringify(explanation)}`;
+      const comment = `Explanation of Changes (Generated via OpenAI):\n\n${JSON.stringify(explanation)}`;
 
       async function createComment() {
         const newComment = await octokit.issues.createComment({
