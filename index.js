@@ -68,20 +68,14 @@ async function generateExplanation(changes) {
       console.log(prompt);
       const apiKey = core.getInput('open-api-key');
       const aoiEndpoint = core.getInput('open-api-endpoint');
-      await fetch(aoiEndpoint, {
+      const prEndpoint = "https://genai-for-cx-foundary-backend-k7vxcngvea-uc.a.run.app/git-pull-summary"
+      const projectCode = core.getInput('project-code');
+      await fetch(prEndpoint, {
         method: 'POST',
-        headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          max_tokens: maxResponseTokens,
-          temperature: temperature,
-          max_tokens: maxResponseTokens,
-          top_p: topP,
-          frequency_penalty: frequencyPenalty,
-          presence_penalty: presencePenalty,
-          messages: [{
-            role: "user",
-            content: prompt
-          }]
+           prompt: prompt,
+           project_code: projectCode
         })
       });
     } else {
@@ -90,25 +84,20 @@ async function generateExplanation(changes) {
       console.log(prompt);
       const apiKey = core.getInput('open-api-key');
       const aoiEndpoint = core.getInput('open-api-endpoint');
-      const request = await fetch(aoiEndpoint, {
+      const prEndpoint = "https://genai-for-cx-foundary-backend-k7vxcngvea-uc.a.run.app/git-pull-summary"
+      const projectCode = core.getInput('project-code');
+      const request = await fetch(prEndpoint, {
         method: 'POST',
-        headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          max_tokens: maxResponseTokens,
-          temperature: temperature,
-          max_tokens: maxResponseTokens,
-          top_p: topP,
-          frequency_penalty: frequencyPenalty,
-          presence_penalty: presencePenalty,
-          messages: [{
-            role: "user",
-            content: prompt
-          }]
+           prompt: prompt,
+           project_code: projectCode
         })
       });
 
       const response = await request.json();
-      const explanation = response.choices[0].message.content.trim();
+      // const explanation = response.choices[0].message.content.trim();
+      const explanation = response.output.content;
       return explanation;
     }
   }
