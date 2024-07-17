@@ -97,7 +97,9 @@ async function generateExplanation(changes) {
 
       const response = await request.json();
       // const explanation = response.choices[0].message.content.trim();
+      console.log(response)
       const explanation = response.output.content;
+      console.log(explanation)
       return explanation;
     }
   }
